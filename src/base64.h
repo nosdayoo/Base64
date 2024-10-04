@@ -26,21 +26,21 @@ namespace base64 {
         };
     }
     namespace utils {
-        static uint32_t triple(const std::string& input, int i) {
-            return (map_data::decode[input[i]] << 18) | (map_data::decode[input[i + 1]] << 12) | (map_data::decode[input[i + 2]] << 6) | map_data::decode[input[i + 3]];
+        static uint32_t triple(const std::string& in, int i) {
+            return (map_data::decode[in[i]] << 18) | (map_data::decode[in[i + 1]] << 12) | (map_data::decode[in[i + 2]] << 6) | map_data::decode[in[i + 3]];
         }
 
-        static uint32_t octet(const std::string& data, int& index, int size) {
-            return (index < size) ? static_cast<unsigned char>(data[index++]) : 0;
+        static uint32_t octet(const std::string& in, int& index, int size) {
+            return (index < size) ? static_cast<unsigned char>(in[index++]) : 0;
         }
     }
 
-    static std::string encode(const std::string& data) {
-        int size = data.size();
+    static std::string encode(const std::string& in) {
+        int size = in.size();
         std::vector<char> out((size + 2) / 3 * 4, '=');
 
         for (int i = 0, j = 0; i < size;) {
-            auto t = (utils::octet(data, i, size) << 16) | (utils::octet(data, i, size) << 8) | utils::octet(data, i, size);
+            auto t = (utils::octet(in, i, size) << 16) | (utils::octet(in, i, size) << 8) | utils::octet(in, i, size);
             out[j++] = map_data::encode[t >> 18];
             out[j++] = map_data::encode[t >> 12];
             out[j++] = (i + 1 < size) ? map_data::encode[(t >> 6) & 0x3F] : '=';
@@ -50,16 +50,16 @@ namespace base64 {
         return std::string(out.begin(), out.end());
     }
 
-    static std::string decode(const std::string& input) {
-        if (input.size() % 4 != 0) return "Invalid!";
+    static std::string decode(const std::string& in) {
+        if (in.size() % 4 != 0) return "Invalid!";
         std::vector<char> out;
-        out.reserve(input.size() / 4 * 3);
+        out.reserve(in.size() / 4 * 3);
 
-        for (int i = 0; i < input.size(); i += 4) {
-            auto triple = utils::triple(input, i);
+        for (int i = 0; i < in.size(); i += 4) {
+            auto triple = utils::triple(in, i);
             out.push_back((triple >> 16) & 0xFF);
-            if (input[i + 2] != '=') out.push_back((triple >> 8) & 0xFF);
-            if (input[i + 3] != '=') out.push_back(triple & 0xFF);
+            if (in[i + 2] != '=') out.push_back((triple >> 8) & 0xFF);
+            if (in[i + 3] != '=') out.push_back(triple & 0xFF);
         }
 
         return std::string(out.begin(), out.end());
