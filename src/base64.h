@@ -1,39 +1,67 @@
 #include <string>
+#include <vector>
 #include <algorithm>
 
 namespace base64 {
-	namespace map_data {
-		static std::string encode = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        static std::string decode = "\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x3E\x40\x40\x40\x3F\x34\x35\x36\x37\x38\x39\x3A\x3B\x3C\x3D\x40\x40\x40\x40\x40\x40\x40\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x20\x21\x22\x23\x24\x25\x40\x40\x40\x40\x40\x40\x26\x27\x28\x29\x2A\x2B\x2C\x2D\x2E\x2F\x30\x31\x32\x33\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40\x40";
-	}
+    namespace map_data {
+        static std::string encode = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-	static std::string encode(const std::string& in) {
-		int value = 0, value_bit = -6;
-		std::string ret;
+        static const char decode[] = {
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63,
+            52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 64, 64, 64, 64, 64,
+            64, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 64, 64, 64, 64, 64,
+            64, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+            41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+            64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
+        };
+    }
+    namespace utils {
+        static uint32_t triple(const std::string& input, int i) {
+            return (map_data::decode[input[i]] << 18) | (map_data::decode[input[i + 1]] << 12) | (map_data::decode[input[i + 2]] << 6) | map_data::decode[input[i + 3]];
+        }
 
-		for (auto& c : in) {
-			value = (value << 8) + c;
-			for (value_bit += 8; value_bit >= 0; value_bit -= 6) ret.push_back(map_data::encode[(value >> value_bit) & 0x3F]);
-		}
+        static uint32_t octet(const std::string& data, int& index, int size) {
+            return (index < size) ? static_cast<unsigned char>(data[index++]) : 0;
+        }
+    }
 
-		if (value_bit > -6) ret.push_back(map_data::encode[(value << 8) >> value_bit & 0x3F]);
-		ret.append((4 - ret.size() % 4) % 4, '=');
-		return ret;
-	}
+    static std::string encode(const std::string& data) {
+        int size = data.size();
+        std::vector<char> out((size + 2) / 3 * 4, '=');
 
-	static std::string decode(const std::string& in) {
-		int value = 0, value_bit = -8;
-		std::string ret;
+        for (int i = 0, j = 0; i < size;) {
+            auto t = (utils::octet(data, i, size) << 16) | (utils::octet(data, i, size) << 8) | utils::octet(data, i, size);
+            out[j++] = map_data::encode[t >> 18];
+            out[j++] = map_data::encode[t >> 12];
+            out[j++] = (i + 1 < size) ? map_data::encode[(t >> 6) & 0x3F] : '=';
+            out[j++] = (i + 2 < size) ? map_data::encode[t & 0x3F] : '=';
+        }
 
-		for (auto& c : in) {
-			if (std::isspace(c) || c == '=') continue;
-			if (map_data::decode[c] == 64) return "invalid!";
-			value = (value << 6) + map_data::decode[c];
-			if ((value_bit += 6) >= 0) {
-				ret.push_back((value >> value_bit) & 0xFF);
-				value_bit -= 8;
-			}
-		}
-		return ret;
-	}
+        return std::string(out.begin(), out.end());
+    }
+
+    static std::string decode(const std::string& input) {
+        if (input.size() % 4 != 0) return "Invalid!";
+        std::vector<char> out;
+        out.reserve(input.size() / 4 * 3);
+
+        for (int i = 0; i < input.size(); i += 4) {
+            auto triple = utils::triple(input, i);
+            out.push_back((triple >> 16) & 0xFF);
+            if (input[i + 2] != '=') out.push_back((triple >> 8) & 0xFF);
+            if (input[i + 3] != '=') out.push_back(triple & 0xFF);
+        }
+
+        return std::string(out.begin(), out.end());
+    }
 }
