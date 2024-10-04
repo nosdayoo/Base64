@@ -31,7 +31,7 @@ namespace base64 {
         }
 
         static uint32_t octet(const std::string& in, int& index, int size) {
-            return (index < size) ? static_cast<unsigned char>(in[index++]) : 0;
+            return (index < size) ? (unsigned char)in[index++] : 0;
         }
     }
 
