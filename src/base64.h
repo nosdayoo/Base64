@@ -2,6 +2,22 @@
 #include <vector>
 #include <algorithm>
 
+/*
+/       \                                /      \ /  |  /  |
+$$$$$$$  |  ______    _______   ______  /$$$$$$  |$$ |  $$ |
+$$ |__$$ | /      \  /       | /      \ $$ \__$$/ $$ |__$$ |
+$$    $$<  $$$$$$  |/$$$$$$$/ /$$$$$$  |$$      \ $$    $$ |
+$$$$$$$  | /    $$ |$$      \ $$    $$ |$$$$$$$  |$$$$$$$$ |
+$$ |__$$ |/$$$$$$$ | $$$$$$  |$$$$$$$$/ $$ \__$$ |      $$ |
+$$    $$/ $$    $$ |/     $$/ $$       |$$    $$/       $$ |
+$$$$$$$/   $$$$$$$/ $$$$$$$/   $$$$$$$/  $$$$$$/        $$/
+
+dev    : nosdayoo
+github : https://github.com/nosdayoo/Base64
+
+: mini lib o_O :
+*/
+
 namespace base64 {
     namespace map_data {
         static std::string encode = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -26,8 +42,8 @@ namespace base64 {
         };
     }
     namespace utils {
-        static uint32_t triple(const std::string& in, int i) {
-            return (map_data::decode[in[i]] << 18) | (map_data::decode[in[i + 1]] << 12) | (map_data::decode[in[i + 2]] << 6) | map_data::decode[in[i + 3]];
+        static uint32_t triple(const std::string& in, int index) {
+            return (map_data::decode[in[index]] << 18) | (map_data::decode[in[index + 1]] << 12) | (map_data::decode[in[index + 2]] << 6) | map_data::decode[in[index + 3]];
         }
 
         static uint32_t octet(const std::string& in, int& index, int size) {
