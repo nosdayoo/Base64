@@ -52,7 +52,7 @@ namespace base64 {
     }
 
     static std::string encode(const std::string& in) {
-        int size = in.size();
+        int size = (int)in.size();
         std::vector<char> out((size + 2) / 3 * 4, '=');
 
         for (int i = 0, j = 0; i < size;) {
