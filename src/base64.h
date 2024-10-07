@@ -22,7 +22,7 @@ github : https://github.com/nosdayoo/Base64
 
 namespace base64 {
     namespace map_data {
-        static std::string encode = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        static std::string_view encode = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
         static const char decode[] = {
             64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
@@ -44,42 +44,44 @@ namespace base64 {
         };
     }
     namespace utils {
-        static uint32_t triple(const std::string& in, int index) {
+        static size_t triple(const std::string_view& in, size_t index) {
             return (map_data::decode[in[index]] << 18) | (map_data::decode[in[index + 1]] << 12) | (map_data::decode[in[index + 2]] << 6) | map_data::decode[in[index + 3]];
         }
-
-        static uint32_t octet(const std::string& in, int& index, int size) {
-            return (index < size) ? (unsigned char)in[index++] : 0;
-        }
     }
 
-    static std::string encode(const std::string& in) {
-        int size = (int)in.size();
-        std::vector<char> out((size + 2) / 3 * 4, '=');
+    std::string encode(const std::string_view input) {
+        const size_t size = input.size();
+        const size_t out_size = (size + 2) / 3 * 4;
+        std::string out(out_size, '\0');
 
-        for (int i = 0, j = 0; i < size;) {
-            auto t = (utils::octet(in, i, size) << 16) | (utils::octet(in, i, size) << 8) | utils::octet(in, i, size);
-            out[j++] = map_data::encode[t >> 18];
-            out[j++] = map_data::encode[t >> 12];
-            out[j++] = (i + 1 < size) ? map_data::encode[(t >> 6) & 0x3F] : '=';
-            out[j++] = (i + 2 < size) ? map_data::encode[t & 0x3F] : '=';
+        size_t j = 0;
+        for (size_t i = 0; i < size;) {
+            size_t buffer = 0;
+            for (int k = 0; k < 3; ++k) {
+                if (i < size) buffer |= (size_t)input[i++] << (16 - k * 8);
+            }
+            out[j++] = map_data::encode[(buffer >> 18) & 0x3F];
+            out[j++] = map_data::encode[(buffer >> 12) & 0x3F];
+            out[j++] = (i > size + 1) ? '=' : map_data::encode[(buffer >> 6) & 0x3F];
+            out[j++] = (i > size) ? '=' : map_data::encode[buffer & 0x3F];
         }
-
-        return std::string(out.begin(), out.end());
+        out.resize(j);
+        return out;
     }
 
-    static std::string decode(const std::string& in) {
-        if (in.size() % 4 != 0) return "Invalid!";
-        std::vector<char> out;
-        out.reserve(in.size() / 4 * 3);
-
-        for (int i = 0; i < in.size(); i += 4) {
+    static std::string decode(const std::string_view& in) {
+        size_t size = in.size();
+        size_t out_size = (size / 4) * 3;
+        if (size % 4 != 0) return "Invalid!";
+        if (in[size - 2] == '=') out_size -= 2;
+        else if (in[size - 1] == '=') out_size -= 1;
+        std::string out(out_size, '\0');
+        size_t out_index = 0;
+        for (size_t i = 0; i < size; i += 4) {
             auto triple = utils::triple(in, i);
-            out.push_back((triple >> 16) & 0xFF);
-            if (in[i + 2] != '=') out.push_back((triple >> 8) & 0xFF);
-            if (in[i + 3] != '=') out.push_back(triple & 0xFF);
+            out[out_index++] = (triple >> 16) & 0xFF;
+            if (in[i + 2] != '=') out[out_index++] = (triple >> 8) & 0xFF;
+            if (in[i + 3] != '=') out[out_index++] = triple & 0xFF;
         }
-
-        return std::string(out.begin(), out.end());
+        return out;
     }
-}
