@@ -1,8 +1,10 @@
+#pragma once
 #include <string>
 #include <vector>
 #include <algorithm>
 
 /*
+ _______
 /       \                                /      \ /  |  /  |
 $$$$$$$  |  ______    _______   ______  /$$$$$$  |$$ |  $$ |
 $$ |__$$ | /      \  /       | /      \ $$ \__$$/ $$ |__$$ |
