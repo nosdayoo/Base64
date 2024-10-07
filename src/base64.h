@@ -57,7 +57,7 @@ namespace base64 {
         size_t j = 0;
         for (size_t i = 0; i < size;) {
             size_t buffer = 0;
-            for (int k = 0; k < 3; ++k) {
+            for (size_t k = 0; k < 3; ++k) {
                 if (i < size) buffer |= (size_t)input[i++] << (16 - k * 8);
             }
             out[j++] = map_data::encode[(buffer >> 18) & 0x3F];
