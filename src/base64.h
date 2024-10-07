@@ -85,3 +85,4 @@ namespace base64 {
         }
         return out;
     }
+}
