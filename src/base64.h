@@ -49,7 +49,7 @@ namespace base64 {
         }
     }
 
-    std::string encode(const std::string_view input) {
+    static std::string encode(const std::string_view input) {
         const size_t size = input.size();
         const size_t out_size = (size + 2) / 3 * 4;
         std::string out(out_size, '\0');
